@@ -1,0 +1,112 @@
+<article
+  class="group relative bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden
+         hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/10
+         transition-all duration-300 cursor-pointer flex flex-col"
+  (click)="selectGame()">
+
+  <!-- Game Cover -->
+  <div class="relative h-44 overflow-hidden bg-slate-900">
+    @if (game.backgroundImage) {
+      <img
+        [src]="game.backgroundImage"
+        [alt]="game.nome"
+        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80"
+      />
+    } @else {
+      <div class="w-full h-full flex items-center justify-center bg-linear-to-br from-slate-800 to-slate-900">
+        <svg class="w-16 h-16 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+            d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+        </svg>
+      </div>
+    }
+
+    <!-- Gradient overlay -->
+    <div class="absolute inset-0 bg-linear-to-t from-slate-800/90 via-transparent to-transparent"></div>
+
+    <!-- Rating badge -->
+    @if (game.rating) {
+      <div class="absolute top-3 right-3">
+        <span [class]="'text-xs font-bold px-2.5 py-1 rounded-full bg-slate-900/80 backdrop-blur-sm border border-slate-700/60 ' + getRatingColor(game.rating)">
+          ★ {{ game.rating | number:'1.1-1' }}
+        </span>
+      </div>
+    }
+  </div>
+
+  <!-- Card Body -->
+  <div class="flex flex-col flex-1 p-5 gap-3">
+
+    <!-- Title -->
+    <h3 class="text-white font-bold text-base leading-tight group-hover:text-violet-300 transition-colors line-clamp-2">
+      {{ game.nome }}
+    </h3>
+
+    <!-- Meta info -->
+    <div class="flex flex-wrap gap-2">
+      <span class="text-xs text-slate-400 bg-slate-700/50 px-2.5 py-1 rounded-full">
+        {{ game.releaseDate | date:'yyyy' }}
+      </span>
+      <span class="text-xs text-slate-400 bg-slate-700/50 px-2.5 py-1 rounded-full truncate max-w-30">
+        {{ game.genres }}
+      </span>
+    </div>
+
+    <!-- Ratings count -->
+    @if (game.ratingsCount) {
+      <p class="text-xs text-slate-500">
+        {{ game.ratingsCount | number }} avaliações
+      </p>
+    }
+
+    <!-- Loading state -->
+    @if (loading) {
+      <div class="mt-auto pt-3 border-t border-slate-700/50">
+        <div class="flex items-center gap-2 text-slate-400">
+          <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <span class="text-xs">Analisando jogo...</span>
+        </div>
+      </div>
+    }
+
+    <!-- Recommendation result -->
+    @if (recommendation && !loading) {
+      <div class="mt-auto pt-3 border-t border-slate-700/50 space-y-2">
+
+        <!-- Stars -->
+        <div class="flex gap-1">
+          @for (s of getStarsArray(recommendation.stars); track $index) {
+            <span class="text-amber-400 text-base">★</span>
+          }
+          @for (s of getEmptyStarsArray(recommendation.stars); track $index) {
+            <span class="text-slate-600 text-base">★</span>
+          }
+        </div>
+
+        <!-- Badge -->
+        <span [class]="'inline-block text-xs font-semibold px-3 py-1 rounded-full ' + getBadgeClasses(recommendation.level)">
+          {{ recommendation.label }}
+        </span>
+
+        <!-- Reason -->
+        <p class="text-xs text-slate-400 leading-relaxed">{{ recommendation.reason }}</p>
+      </div>
+    }
+
+    <!-- CTA when not expanded -->
+    @if (!expanded) {
+      <div class="mt-auto pt-3 border-t border-slate-700/50">
+        <span class="text-xs text-violet-400 group-hover:text-violet-300 flex items-center gap-1 transition-colors">
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+          Ver recomendação
+        </span>
+      </div>
+    }
+  </div>
+</article>
