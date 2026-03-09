@@ -1,87 +1,128 @@
-<div class="min-h-screen bg-slate-900 text-white font-sans">
+<div
+  class="min-h-screen bg-slate-900 text-white font-sans flex flex-col items-center justify-start px-6 py-20"
+>
+  <div class="text-center max-w-xl w-full mb-10">
+    <h1 class="text-4xl font-extrabold text-white mb-3 tracking-tight">Vale a pena jogar?</h1>
+    <p class="text-slate-400 text-sm leading-relaxed">
+      Digite o nome de um jogo e receba uma recomendação baseada em nota, popularidade e data de
+      lançamento.
+    </p>
+  </div>
 
-  <main class="relative z-20 max-w-7xl mx-auto px-6 py-30">
+  <div class="w-full max-w-xl flex gap-3 mb-10">
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      (input)="onInput()"
+      (keyup.enter)="search()"
+      placeholder="Ex: God of War, Hollow Knight..."
+      class="flex-1 bg-slate-800 border border-slate-700 text-white placeholder-slate-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition-colors"
+    />
+    <button
+      (click)="search()"
+      class="bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-5 py-3 rounded-xl transition-colors cursor-pointer"
+    >
+      Buscar
+    </button>
+  </div>
 
-    <div class="mb-10 text-center max-w-2xl mx-auto">
-      <h1 class="text-4xl font-extrabold text-white mb-3 tracking-tight">
-        Vale a pena jogar?
-      </h1>
-      <p class="text-slate-400 text-base leading-relaxed">
-        Selecione um jogo para receber uma recomendação baseada em nota, popularidade e data de lançamento.
-      </p>
+  @if (!searched) {
+    <div class="flex flex-col items-center gap-4 text-center text-slate-500 mt-10">
+      <svg class="w-14 h-14 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="1"
+          d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"
+        />
+      </svg>
+      <p class="text-sm">Busque um jogo para começar</p>
+    </div>
+  }
 
-      <div class="mt-6 flex flex-wrap justify-center gap-3">
-        <div class="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 px-4 py-2 rounded-full">
-          <span class="text-amber-400 text-sm">★★★</span>
-          <span class="text-emerald-300 text-xs font-medium">Altamente Recomendado</span>
+  @if (loading) {
+    <div class="flex flex-col items-center gap-4 mt-10">
+      <div class="relative w-14 h-14">
+        <div class="w-14 h-14 rounded-full border-4 border-slate-700"></div>
+        <div
+          class="w-14 h-14 rounded-full border-4 border-t-violet-500 animate-spin absolute inset-0"
+        ></div>
+      </div>
+      <p class="text-slate-400 text-sm">Analisando jogo...</p>
+    </div>
+  }
+
+  @if (error && !loading) {
+    <div class="mt-10 text-center">
+      <p class="text-red-400 text-sm">{{ error }}</p>
+    </div>
+  }
+
+  @if (result && !loading) {
+    <div
+      class="w-full max-w-xl bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden"
+    >
+      @if (result.backgroundImage) {
+        <div class="relative h-52 overflow-hidden">
+          <img
+            [src]="result.backgroundImage"
+            [alt]="result.nome"
+            class="w-full h-full object-cover opacity-80"
+          />
+          <div
+            class="absolute inset-0 bg-linear-to-t from-slate-800/90 via-transparent to-transparent"
+          ></div>
         </div>
-        <div class="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-4 py-2 rounded-full">
-          <span class="text-amber-400 text-sm">★★</span>
-          <span class="text-amber-300 text-xs font-medium">Vale a Pena</span>
+      }
+
+      <div class="p-6 flex flex-col gap-4">
+        <div class="flex items-start justify-between gap-3">
+          <h2 class="text-white font-bold text-xl leading-tight">{{ result.nome }}</h2>
+          @if (result.rating) {
+            <span
+              [class]="
+                'text-sm font-bold px-2.5 py-1 rounded-full bg-slate-900/80 border border-slate-700/60 whitespace-nowrap ' +
+                getRatingColor(result.rating)
+              "
+            >
+              ★ {{ result.rating | number: '1.1-1' }}
+            </span>
+          }
         </div>
-        <div class="flex items-center gap-2 bg-red-500/10 border border-red-500/30 px-4 py-2 rounded-full">
-          <span class="text-amber-400 text-sm">★</span>
-          <span class="text-red-300 text-xs font-medium">Melhor Ver um Filme</span>
+
+        <div class="flex flex-wrap gap-2 text-xs text-slate-400">
+          <span class="bg-slate-700/50 px-2.5 py-1 rounded-full">
+            {{ result.releaseDate | date: 'yyyy' }}
+          </span>
+          @if (result.ratingsCount) {
+            <span class="bg-slate-700/50 px-2.5 py-1 rounded-full">
+              {{ result.ratingsCount | number }} avaliações
+            </span>
+          }
+        </div>
+
+        <div class="border-t border-slate-700/50 pt-4 flex flex-col gap-3">
+          <div class="flex gap-1">
+            @for (s of getStarsArray(result.stars); track $index) {
+              <span class="text-amber-400 text-lg">★</span>
+            }
+            @for (s of getEmptyStarsArray(result.stars); track $index) {
+              <span class="text-slate-600 text-lg">★</span>
+            }
+          </div>
+
+          <span
+            [class]="
+              'inline-block text-xs font-semibold px-3 py-1 rounded-full w-fit ' +
+              getBadgeClasses(result.level)
+            "
+          >
+            {{ result.label }}
+          </span>
+
+          <p class="text-sm text-slate-400 leading-relaxed">{{ result.reason }}</p>
         </div>
       </div>
     </div>
-
-    @if (loading) {
-      <div class="flex flex-col items-center justify-center py-24 gap-4">
-        <div class="relative">
-          <div class="w-16 h-16 rounded-full border-4 border-slate-700"></div>
-          <div class="w-16 h-16 rounded-full border-4 border-t-violet-500 animate-spin absolute inset-0"></div>
-        </div>
-        <p class="text-slate-400 text-sm">Carregando jogos...</p>
-      </div>
-    }
-
-    @if (error && !loading) {
-      <div class="flex flex-col items-center justify-center py-20 gap-6 text-center max-w-sm mx-auto">
-        <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center border border-red-500/30">
-          <svg class="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.07 16.5c-.77.833.193 2.5 1.732 2.5z" />
-          </svg>
-        </div>
-        <div>
-          <p class="text-white font-semibold mb-1">Erro ao carregar</p>
-          <p class="text-slate-400 text-sm">{{ error }}</p>
-        </div>
-        <button
-          (click)="loadGames()"
-          class="bg-gray-600 hover:bg-gray-800 cursor-pointer text-white text-sm font-semibold
-                 px-6 py-2.5 rounded-xl transition-colors duration-200">
-          Tentar novamente
-        </button>
-      </div>
-    }
-
-    @if (!loading && !error && filteredGames.length === 0 && searchQuery) {
-      <div class="flex flex-col items-center justify-center py-20 gap-3 text-center">
-        <p class="text-slate-400 text-base">
-          Nenhum jogo encontrado para
-          <span class="text-white font-medium">"{{ searchQuery }}"</span>
-        </p>
-        <button
-          (click)="searchQuery = ''; onSearch()"
-          class="text-violet-400 hover:text-violet-300 text-sm transition-colors">
-          Limpar busca
-        </button>
-      </div>
-    }
-
-    @if (!loading && !error && filteredGames.length > 0) {
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-        @for (game of filteredGames; track game.id) {
-          <app-card-games
-            [game]="game"
-            (gameSelected)="onGameSelected($event)">
-          </app-card-games>
-        }
-      </div>
-    }
-
-  </main>
-
+  }
 </div>

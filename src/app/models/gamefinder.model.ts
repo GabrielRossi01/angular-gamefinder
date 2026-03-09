@@ -1,22 +1,13 @@
-export interface GameFinder {
-  id: number;
+export interface GameResponse {
   nome: string;
-  releaseDate: Date;
-  genres: string;
-  stars: string;
-  rating?: number;
-  ratingsCount?: number;
+  releaseDate: string;
   backgroundImage?: string;
-  recommendation?: RecommendationLevel;
-  recommendationLabel?: string;
-}
-
-export type RecommendationLevel = 'highly_recommended' | 'worth_it' | 'watch_a_movie';
-
-export interface RecommendationResult {
-  game: GameFinder;
+  rating: number;
+  ratingsCount: number;
+  stars: number;
   level: RecommendationLevel;
   label: string;
   reason: string;
-  stars: number;
 }
+
+export type RecommendationLevel = 'high' | 'medium' | 'low';
